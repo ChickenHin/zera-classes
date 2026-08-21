@@ -46,7 +46,7 @@ private:
         double sampleOffset = 0.0;
         double takenAt = 0.0;
     };
-    QList<NodeVal> decodeNodes(const QStringList nodes);
+    QList<NodeVal> decodeNodes(const QStringList &nodes);
 
     static cSenseSettingsPtr getMt310s2dSenseSettings();
     void setLogFileName(const QString &currentTestFunction, const QString &currentDataTag);

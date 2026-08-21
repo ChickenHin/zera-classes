@@ -47,8 +47,6 @@ void test_adj_module_lem_offset_sequences::adjOffsetActRefZero()
     QCOMPARE(adjSendOffset("UL1", "C1400V", "0.0"), "+0");
     QCOMPARE(adjCompute(), "+0");
 
-    QStringList nodes = queryAdjNodesOrCoeff("UL1", "C1400V", NODE);
-
     QStringList coeffs = queryAdjNodesOrCoeff("UL1", "C1400V", COEFFICIENT);
     QCOMPARE(coeffs.size(), 4);
     // we adjusted with reference value 0.0 => all coeefs 0
@@ -261,7 +259,7 @@ QStringList test_adj_module_lem_offset_sequences::queryAdjNodesOrCoeff(const QSt
                                                                        CoeffOrNode coeffOrNode)
 {
     cSenseSettingsPtr senseSettings = getMt310s2dSenseSettings();
-    SenseSystem::cChannelSettings* channelSetting = senseSettings->findChannelSettingByAlias1(channelAlias);
+    const SenseSystem::cChannelSettings* channelSetting = senseSettings->findChannelSettingByAlias1(channelAlias);
     const QString channelMName = channelSetting->m_nameMx;
     const QString valueType = coeffOrNode == NODE ? "NODE" : "COEFFICIENT";
     QStringList offsetCoeffs;
@@ -276,7 +274,7 @@ QStringList test_adj_module_lem_offset_sequences::queryAdjNodesOrCoeff(const QSt
     return offsetCoeffs;
 }
 
-QList<test_adj_module_lem_offset_sequences::NodeVal> test_adj_module_lem_offset_sequences::decodeNodes(const QStringList nodes)
+QList<test_adj_module_lem_offset_sequences::NodeVal> test_adj_module_lem_offset_sequences::decodeNodes(const QStringList &nodes)
 {
     QList<NodeVal> decodedNodes;
     for (int nodeNo=0; nodeNo<4; ++nodeNo) {
