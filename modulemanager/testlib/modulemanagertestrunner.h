@@ -27,6 +27,7 @@ public:
 
     void start(const QString &sessionFileName);
     QString getSessionFileName() const;
+    void waitUntilModulesAreReady();
 
     VeinStorage::AbstractEventSystem *getVeinStorageSystem();
     VeinStorage::AbstractDatabase* getVeinStorageDb();

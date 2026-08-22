@@ -86,12 +86,17 @@ void ModuleManagerTestRunner::start(const QString &sessionFileName)
 {
     m_currentSessionFileName = sessionFileName;
     m_modMan->changeSessionFile(sessionFileName);
-    m_modMan->waitUntilModulesAreReady();
+    waitUntilModulesAreReady();
 }
 
 QString ModuleManagerTestRunner::getSessionFileName() const
 {
     return m_currentSessionFileName;
+}
+
+void ModuleManagerTestRunner::waitUntilModulesAreReady()
+{
+    m_modMan->waitUntilModulesAreReady();
 }
 
 QList<TestModuleManager::TModuleInstances> ModuleManagerTestRunner::getInstanceCountsOnModulesDestroyed()
