@@ -1,11 +1,8 @@
 #include "test_change_session.h"
-#include "testfactoryserviceinterfaces.h"
+#include "modulemanagertestrunner.h"
 #include "modulemanagerconfig.h"
 #include "scpimodulenetclientblocked.h"
-#include "testmodulemanager.h"
 #include "vf_client_component_setter.h"
-#include <modulemanagersetupfacade.h>
-#include <testlicensesystem.h>
 #include <zera-jsonfileloader.h>
 #include <timemachineobject.h>
 #include <timerfactoryqtfortest.h>
@@ -13,7 +10,6 @@
 #include <backtracetreegenerator.h>
 #include <QJsonArray>
 #include <QTest>
-
 
 QTEST_MAIN(test_change_session)
 
@@ -28,122 +24,68 @@ void test_change_session::initTestCase()
 
 void test_change_session::changeToUnavailableSession()
 {
-    TestLicenseSystem licenseSystem;
-    ModuleManagerSetupFacade modManSetupFacade(&licenseSystem);
+    ModuleManagerTestRunner modMan("mt310s2-meas-session.json");
 
-    TestModuleManager modMan(&modManSetupFacade, m_serviceInterfaceFactory);
-    modMan.loadAllAvailableModulePlugins();
-    modMan.setupConnections();
-    modMan.startAllTestServices("mt310s2", false);
-    modMan.changeSessionFile("mt310s2-meas-session.json");
-    modMan.waitUntilModulesAreReady();
-
-    QVariant oldValue = modManSetupFacade.getStorageSystem()->getDb()->getStoredValue(systemEntityId, "Session");
+    QVariant oldValue = modMan.getVeinStorageDb()->getStoredValue(systemEntityId, "Session");
     QEvent* event = VfClientComponentSetter::generateEvent(systemEntityId, "Session", oldValue, "XYZ");
-    emit modManSetupFacade.getStorageSystem()->sigSendEvent(event); // could be any event system
+    emit modMan.getVeinStorageSystem()->sigSendEvent(event); // could be any event system
     modMan.waitUntilModulesAreReady();
-    QCOMPARE(modManSetupFacade.getStorageSystem()->getDb()->getStoredValue(systemEntityId, "Session").toString(), QString("mt310s2-meas-session.json"));
-    modMan.destroyModulesAndWaitUntilAllShutdown();
+    QCOMPARE(modMan.getVeinStorageDb()->getStoredValue(systemEntityId, "Session").toString(), QString("mt310s2-meas-session.json"));
 }
 
 void test_change_session::changeToSameSession()
 {
-    TestLicenseSystem licenseSystem;
-    ModuleManagerSetupFacade modManSetupFacade(&licenseSystem);
+    ModuleManagerTestRunner modMan("mt310s2-meas-session.json");
 
-    TestModuleManager modMan(&modManSetupFacade, m_serviceInterfaceFactory);
-    modMan.loadAllAvailableModulePlugins();
-    modMan.setupConnections();
-    modMan.startAllTestServices("mt310s2", false);
-    modMan.changeSessionFile("mt310s2-meas-session.json");
-    modMan.waitUntilModulesAreReady();
-
-    QVariant oldValue = modManSetupFacade.getStorageSystem()->getDb()->getStoredValue(systemEntityId, "Session");
+    QVariant oldValue = modMan.getVeinStorageDb()->getStoredValue(systemEntityId, "Session");
     QEvent* event = VfClientComponentSetter::generateEvent(systemEntityId, "Session", oldValue, "mt310s2-meas-session.json");
-    emit modManSetupFacade.getStorageSystem()->sigSendEvent(event); // could be any event system
+    emit modMan.getVeinStorageSystem()->sigSendEvent(event); // could be any event system
     modMan.waitUntilModulesAreReady();
-    QCOMPARE(modManSetupFacade.getStorageSystem()->getDb()->getStoredValue(systemEntityId, "Session").toString(), QString("mt310s2-meas-session.json"));
-    modMan.destroyModulesAndWaitUntilAllShutdown();
+    QCOMPARE(modMan.getVeinStorageDb()->getStoredValue(systemEntityId, "Session").toString(), QString("mt310s2-meas-session.json"));
 }
 
 void test_change_session::changeSessionMt310s2FromComponent()
 {
-    TestLicenseSystem licenseSystem;
-    ModuleManagerSetupFacade modManSetupFacade(&licenseSystem);
+    ModuleManagerTestRunner modMan("mt310s2-meas-session.json");
 
-    TestModuleManager modMan(&modManSetupFacade, m_serviceInterfaceFactory);
-    modMan.loadAllAvailableModulePlugins();
-    modMan.setupConnections();
-    modMan.startAllTestServices("mt310s2", false);
-    modMan.changeSessionFile("mt310s2-meas-session.json");
-    modMan.waitUntilModulesAreReady();
-
-    QVariant oldValue = modManSetupFacade.getStorageSystem()->getDb()->getStoredValue(systemEntityId, "Session");
+    QVariant oldValue = modMan.getVeinStorageDb()->getStoredValue(systemEntityId, "Session");
     QEvent* event = VfClientComponentSetter::generateEvent(systemEntityId, "Session", oldValue, "mt310s2-dc-session.json");
-    emit modManSetupFacade.getStorageSystem()->sigSendEvent(event); // could be any event system
+    emit modMan.getVeinStorageSystem()->sigSendEvent(event); // could be any event system
     modMan.waitUntilModulesAreReady();
-    QCOMPARE(modManSetupFacade.getStorageSystem()->getDb()->getStoredValue(systemEntityId, "Session").toString(), QString("mt310s2-dc-session.json"));
-    modMan.destroyModulesAndWaitUntilAllShutdown();
+    QCOMPARE(modMan.getVeinStorageDb()->getStoredValue(systemEntityId, "Session").toString(), QString("mt310s2-dc-session.json"));
 }
 
 void test_change_session::changeSessionMt310s2SCPICmd()
 {
-    TestLicenseSystem licenseSystem;
-    ModuleManagerSetupFacade modManSetupFacade(&licenseSystem);
-
-    TestModuleManager modMan(&modManSetupFacade, m_serviceInterfaceFactory);
-    modMan.loadAllAvailableModulePlugins();
-    modMan.setupConnections();
-    modMan.startAllTestServices("mt310s2", false);
-    modMan.changeSessionFile("mt310s2-meas-session.json");
-    modMan.waitUntilModulesAreReady();
+    ModuleManagerTestRunner modMan("mt310s2-meas-session.json");
 
     ScpiModuleNetClientBlocked client;
     client.sendReceive("CONFIGURATION:SYST:NAMESESSION EMOB DC;");
     modMan.waitUntilModulesAreReady();
-    QCOMPARE(modManSetupFacade.getStorageSystem()->getDb()->getStoredValue(systemEntityId, "Session").toString(), QString("mt310s2-emob-session-dc.json"));
-    modMan.destroyModulesAndWaitUntilAllShutdown();
+    QCOMPARE(modMan.getVeinStorageDb()->getStoredValue(systemEntityId, "Session").toString(), QString("mt310s2-emob-session-dc.json"));
 }
 
 void test_change_session::changeSessionCom5003FromComponent()
 {
     ModulemanagerConfig::setDemoDevice("com5003");
-    TestLicenseSystem licenseSystem;
-    ModuleManagerSetupFacade modManSetupFacade(&licenseSystem);
+    ModuleManagerTestRunner modMan("com5003-meas-session.json", false, "com5003");
 
-    TestModuleManager modMan(&modManSetupFacade, m_serviceInterfaceFactory);
-    modMan.loadAllAvailableModulePlugins();
-    modMan.setupConnections();
-    modMan.startAllTestServices("com5003", false);
-    modMan.changeSessionFile("com5003-meas-session.json");
-    modMan.waitUntilModulesAreReady();
-
-    QVariant oldValue = modManSetupFacade.getStorageSystem()->getDb()->getStoredValue(systemEntityId, "Session");
+    QVariant oldValue = modMan.getVeinStorageDb()->getStoredValue(systemEntityId, "Session");
     QEvent* event = VfClientComponentSetter::generateEvent(systemEntityId, "Session", oldValue, "com5003-ced-session.json");
-    emit modManSetupFacade.getStorageSystem()->sigSendEvent(event); // could be any event system
+    emit modMan.getVeinStorageSystem()->sigSendEvent(event); // could be any event system
     modMan.waitUntilModulesAreReady();
-    QCOMPARE(modManSetupFacade.getStorageSystem()->getDb()->getStoredValue(systemEntityId, "Session").toString(), QString("com5003-ced-session.json"));
-    modMan.destroyModulesAndWaitUntilAllShutdown();
+    QCOMPARE(modMan.getVeinStorageDb()->getStoredValue(systemEntityId, "Session").toString(), QString("com5003-ced-session.json"));
 }
 
 void test_change_session::changeSessionCom5003SCPICmd()
 {
     ModulemanagerConfig::setDemoDevice("com5003");
-    TestLicenseSystem licenseSystem;
-    ModuleManagerSetupFacade modManSetupFacade(&licenseSystem);
-
-    TestModuleManager modMan(&modManSetupFacade, m_serviceInterfaceFactory);
-    modMan.loadAllAvailableModulePlugins();
-    modMan.setupConnections();
-    modMan.startAllTestServices("com5003", false);
-    modMan.changeSessionFile("com5003-meas-session.json");
-    modMan.waitUntilModulesAreReady();
+    ModuleManagerTestRunner modMan("com5003-meas-session.json", false, "com5003");
 
     ScpiModuleNetClientBlocked client;
     client.sendReceive("CONFIGURATION:SYST:NAMESESSION 3 Systems / 2 Wires;");
     modMan.waitUntilModulesAreReady();
-    QCOMPARE(modManSetupFacade.getStorageSystem()->getDb()->getStoredValue(systemEntityId, "Session").toString(), QString("com5003-perphase-session.json"));
-    modMan.destroyModulesAndWaitUntilAllShutdown();
+    QCOMPARE(modMan.getVeinStorageDb()->getStoredValue(systemEntityId, "Session").toString(), QString("com5003-perphase-session.json"));
 }
 
 void test_change_session::changeSessionMt310s2MultipleProblematicRangeModule()
@@ -206,15 +148,7 @@ void test_change_session::changeSessionMt310s2MultipleProblematicSampleModule()
 void test_change_session::testSessionCatalogScpiCmd()
 {
     ModulemanagerConfig::setDemoDevice("mt310s2");
-    TestLicenseSystem licenseSystem;
-    ModuleManagerSetupFacade modManSetupFacade(&licenseSystem);
-
-    TestModuleManager modMan(&modManSetupFacade, m_serviceInterfaceFactory);
-    modMan.loadAllAvailableModulePlugins();
-    modMan.setupConnections();
-    modMan.startAllTestServices("mt310s2", false);
-    modMan.changeSessionFile("mt310s2-meas-session.json");
-    modMan.waitUntilModulesAreReady();
+    ModuleManagerTestRunner modMan("mt310s2-meas-session.json");
 
     ScpiModuleNetClientBlocked client;
     QString receivedSessionList = client.sendReceive("CONFIGURATION:SYST:SESSION:CATALOG?");
@@ -225,6 +159,4 @@ void test_change_session::testSessionCatalogScpiCmd()
         expectedSessionList = expectedSessionList + ";" + jsonSessionArray.at(i).toString();
     }
     QCOMPARE(receivedSessionList, expectedSessionList);
-
-    modMan.destroyModulesAndWaitUntilAllShutdown();
 }
