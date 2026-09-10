@@ -1,8 +1,8 @@
 name: Generate Logging Snapshots
 on:
-  push:
-    branches:
-      - master
+  # push:
+  #   branches:
+  #     - master
   workflow_dispatch:
 
 jobs:
